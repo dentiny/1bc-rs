@@ -8,14 +8,14 @@ use std::time::Instant;
 
 #[derive(Debug)]
 struct TempStat {
-    min: f64,
-    max: f64,
-    total: f64,
+    min: f32,
+    max: f32,
+    total: f32,
     count: usize,
 }
 impl TempStat {
     /// Initialize a new temporature stat.
-    fn new(temp: f64) -> Self {
+    fn new(temp: f32) -> Self {
         Self {
             min: temp,
             max: temp,
@@ -25,16 +25,16 @@ impl TempStat {
     }
 
     /// Add a new temporature data point to the current stat.
-    fn add_new_temp(&mut self, temp: f64) {
-        self.min = f64::min(self.min, temp);
-        self.max = f64::max(self.max, temp);
+    fn add_new_temp(&mut self, temp: f32) {
+        self.min = f32::min(self.min, temp);
+        self.max = f32::max(self.max, temp);
         self.total += temp;
         self.count += 1;
     }
 
     /// Get the average temporature.
-    fn aver_temp(&self) -> f64 {
-        self.total / self.count as f64
+    fn aver_temp(&self) -> f32 {
+        self.total / self.count as f32
     }
 }
 
@@ -51,17 +51,13 @@ fn main() -> std::io::Result<()> {
     for line in reader.lines() {
         // `collect` transforms an iterator into a container.
         let line = line.unwrap();
-        let parts: Vec<&str> = line.split(';').collect();
-        if parts.len() != 2 {
-            panic!(
-                "{}",
-                format!("Line is not in the expected format: {}", line)
-            );
-        }
-        let city: String = parts[0].to_owned();
-        let temp: f64 = parts[1]
-            .parse()
-            .expect(&format!("Failed to parse temperature: {}", parts[1]));
+        let mut parts = line.split(';');
+        let city = parts.next().expect("Fails to parse city name.").to_owned();
+        let temp = parts
+            .next()
+            .expect("Fails to parse temporature")
+            .parse::<f32>()
+            .expect("Fails to temporature convert to f32.");
 
         map.entry(city)
             .and_modify(|cur_stat: &mut TempStat| cur_stat.add_new_temp(temp))
